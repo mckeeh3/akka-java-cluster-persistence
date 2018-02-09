@@ -6,6 +6,9 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 class EntityMessage {
     static class Amount implements Serializable {
@@ -35,6 +38,7 @@ class EntityMessage {
     }
 
     static class DepositCommand extends EntityCommand {
+        static final long serialVersionUID = 42L;
         DepositCommand(Entity.Id id, Amount amount) {
             super(id, amount);
         }
@@ -46,6 +50,7 @@ class EntityMessage {
     }
 
     static class WithdrawalCommand extends EntityCommand {
+        static final long serialVersionUID = 42L;
         WithdrawalCommand(Entity.Id id, Amount amount) {
             super(id, amount);
         }
@@ -69,6 +74,7 @@ class EntityMessage {
     }
 
     static class DepositEvent extends EntityEvent {
+        static final long serialVersionUID = 42L;
         DepositEvent(Entity.Id id, Amount amount) {
             super(id, amount);
         }
@@ -84,6 +90,7 @@ class EntityMessage {
     }
 
     static class WithdrawalEvent extends EntityEvent {
+        static final long serialVersionUID = 42L;
         WithdrawalEvent(Entity.Id id, Amount amount) {
             super(id, amount);
         }
@@ -152,6 +159,12 @@ class EntityMessage {
         public String toString() {
             return String.format("%s[%s]", getClass().getSimpleName(), id);
         }
+    }
+
+    static int numberOfEventTags = 10;
+
+    static Set<String> eventTag(EntityCommand entityCommand) {
+        return new HashSet<>(Collections.singletonList(String.format("%d", entityCommand.id.id.hashCode() % numberOfEventTags)));
     }
 
     static ShardRegion.MessageExtractor messageExtractor() {

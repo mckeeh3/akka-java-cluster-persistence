@@ -61,7 +61,7 @@ public class Runner {
     }
 
     private static ActorRef setupClusterSharding(ActorSystem actorSystem) {
-        ClusterShardingSettings settings = ClusterShardingSettings.create(actorSystem);
+        ClusterShardingSettings settings = ClusterShardingSettings.create(actorSystem).withRole("write-side");
         return ClusterSharding.get(actorSystem).start(
                 "entity",
                 EntityPersistenceActor.props(),

@@ -8,6 +8,7 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.persistence.AbstractPersistentActor;
 import akka.persistence.RecoveryCompleted;
+import akka.persistence.journal.Tagged;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
@@ -55,23 +56,37 @@ class EntityPersistenceActor extends AbstractPersistentActor {
     }
 
     private void deposit(EntityMessage.DepositCommand depositCommand) {
-        persist(new EntityMessage.DepositEvent(depositCommand), this::handleDeposit);
+        persist(tagCommand(depositCommand), this::handleDeposit);
     }
 
-    private void handleDeposit(EntityMessage.DepositEvent depositEvent) {
-        update(depositEvent);
-        log.info("Deposit {} {} {}", entity, depositEvent, getSender());
-        getSender().tell(new EntityMessage.CommandAck(depositEvent), getSelf());
+    private void handleDeposit(Tagged taggedEvent) {
+        if (taggedEvent.payload() instanceof EntityMessage.DepositEvent) {
+            EntityMessage.DepositEvent depositEvent = (EntityMessage.DepositEvent) taggedEvent.payload();
+            update(depositEvent);
+            log.info("Deposit {} {} {}", entity, depositEvent, getSender());
+            getSender().tell(new EntityMessage.CommandAck(depositEvent), getSelf());
+        }
     }
 
     private void withdrawal(EntityMessage.WithdrawalCommand withdrawalCommand) {
-        persist(new EntityMessage.WithdrawalEvent(withdrawalCommand), this::handleWithdrawal);
+        persist(tagCommand(withdrawalCommand), this::handleWithdrawal);
     }
 
-    private void handleWithdrawal(EntityMessage.WithdrawalEvent withdrawalEvent) {
-        update(withdrawalEvent);
-        log.info("Withdrawal {} {} {}", entity, withdrawalEvent, getSender());
-        getSender().tell(new EntityMessage.CommandAck(withdrawalEvent), getSelf());
+    private void handleWithdrawal(Tagged taggedEvent) {
+        if (taggedEvent.payload() instanceof EntityMessage.WithdrawalEvent) {
+            EntityMessage.WithdrawalEvent withdrawalEvent = (EntityMessage.WithdrawalEvent) taggedEvent.payload();
+            update(withdrawalEvent);
+            log.info("Withdrawal {} {} {}", entity, withdrawalEvent, getSender());
+            getSender().tell(new EntityMessage.CommandAck(withdrawalEvent), getSelf());
+        }
+    }
+
+    private static Tagged tagCommand(EntityMessage.DepositCommand depositCommand) {
+        return new Tagged(new EntityMessage.DepositEvent(depositCommand), EntityMessage.eventTag(depositCommand));
+    }
+
+    private static Tagged tagCommand(EntityMessage.WithdrawalCommand withdrawalCommand) {
+        return new Tagged(new EntityMessage.WithdrawalEvent(withdrawalCommand), EntityMessage.eventTag(withdrawalCommand));
     }
 
     private void update(EntityMessage.DepositEvent depositEvent) {
