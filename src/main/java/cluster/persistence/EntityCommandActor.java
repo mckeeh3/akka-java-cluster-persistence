@@ -40,17 +40,17 @@ class EntityCommandActor extends AbstractLoggingActor {
     }
 
     private void commandAckSending(EntityMessage.CommandAck commandAck) {
-        log().info("Received (late) {} {}", commandAck, getSender());
+        log().info("Received (late) {} {}", commandAck, sender());
     }
 
     private void tickSending() {
         lastCommand = command();
-        shardRegion.tell(lastCommand, getSelf());
+        shardRegion.tell(lastCommand, self());
         getContext().become(receiving);
     }
 
     private void commandAckReceiving(EntityMessage.CommandAck commandAck) {
-        log().info("Received {} {}", commandAck, getSender());
+        log().info("Received {} {}", commandAck, sender());
         getContext().become(sending);
     }
 
@@ -73,12 +73,12 @@ class EntityCommandActor extends AbstractLoggingActor {
     @Override
     public void preStart() {
         log().info("Start");
-        ticker = getContext().getSystem().scheduler().schedule(
+        ticker = context().system().scheduler().schedule(
                 tickInterval,
                 tickInterval,
-                getSelf(),
+                self(),
                 "tick",
-                getContext().getSystem().dispatcher(),
+                context().system().dispatcher(),
                 null
         );
     }

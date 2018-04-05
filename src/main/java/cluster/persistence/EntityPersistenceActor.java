@@ -15,7 +15,7 @@ import scala.concurrent.duration.FiniteDuration;
 import java.util.concurrent.TimeUnit;
 
 class EntityPersistenceActor extends AbstractPersistentActor {
-    private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+    private final LoggingAdapter log = Logging.getLogger(context().system(), this);
     private Entity entity;
     private final FiniteDuration receiveTimeout = Duration.create(60, TimeUnit.SECONDS);
 
@@ -63,8 +63,8 @@ class EntityPersistenceActor extends AbstractPersistentActor {
         if (taggedEvent.payload() instanceof EntityMessage.DepositEvent) {
             EntityMessage.DepositEvent depositEvent = (EntityMessage.DepositEvent) taggedEvent.payload();
             update(depositEvent);
-            log.info("Deposit {} {} {}", entity, depositEvent, getSender());
-            getSender().tell(new EntityMessage.CommandAck(depositEvent), getSelf());
+            log.info("Deposit {} {} {}", entity, depositEvent, sender());
+            sender().tell(new EntityMessage.CommandAck(depositEvent), self());
         }
     }
 
@@ -76,8 +76,8 @@ class EntityPersistenceActor extends AbstractPersistentActor {
         if (taggedEvent.payload() instanceof EntityMessage.WithdrawalEvent) {
             EntityMessage.WithdrawalEvent withdrawalEvent = (EntityMessage.WithdrawalEvent) taggedEvent.payload();
             update(withdrawalEvent);
-            log.info("Withdrawal {} {} {}", entity, withdrawalEvent, getSender());
-            getSender().tell(new EntityMessage.CommandAck(withdrawalEvent), getSelf());
+            log.info("Withdrawal {} {} {}", entity, withdrawalEvent, sender());
+            sender().tell(new EntityMessage.CommandAck(withdrawalEvent), self());
         }
     }
 
@@ -103,31 +103,31 @@ class EntityPersistenceActor extends AbstractPersistentActor {
 
     private void query(EntityMessage.Query query) {
         if (entity == null) {
-            getSender().tell(new EntityMessage.QueryAckNotFound(query.id), getSelf());
+            sender().tell(new EntityMessage.QueryAckNotFound(query.id), self());
         } else {
-            getSender().tell(new EntityMessage.QueryAck(entity), getSelf());
+            sender().tell(new EntityMessage.QueryAck(entity), self());
         }
     }
 
     private void passivate() {
-        getContext().getParent().tell(new ShardRegion.Passivate(PoisonPill.getInstance()), getSelf());
+        context().parent().tell(new ShardRegion.Passivate(PoisonPill.getInstance()), self());
     }
 
     @Override
     public String persistenceId() {
-        return entity == null ? getSelf().path().name() : entity.id.id;
+        return entity == null ? self().path().name() : entity.id.id;
     }
 
     @Override
     public void preStart() {
         log.info("Start");
-        getContext().setReceiveTimeout(receiveTimeout);
+        context().setReceiveTimeout(receiveTimeout);
     }
 
     @Override
     public void postStop() {
         log.info("Stop passivate {}", entity == null
-                ? String.format("(entity %s not initialized)", getSelf().path().name())
+                ? String.format("(entity %s not initialized)", self().path().name())
                 : entity.id);
     }
 
