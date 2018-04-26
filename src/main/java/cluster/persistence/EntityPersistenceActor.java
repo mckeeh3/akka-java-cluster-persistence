@@ -25,8 +25,6 @@ class EntityPersistenceActor extends AbstractPersistentActor {
                 .match(EntityMessage.DepositEvent.class, this::depositRecover)
                 .match(EntityMessage.WithdrawalEvent.class, this::withdrawalRecover)
                 .match(RecoveryCompleted.class, c -> recoveryCompleted())
-                .match(EntityMessage.DepositCommand.class, this::deposit)
-                .match(EntityMessage.WithdrawalCommand.class, this::withdrawal)
                 .match(EntityMessage.Query.class, this::query)
                 .build();
     }
