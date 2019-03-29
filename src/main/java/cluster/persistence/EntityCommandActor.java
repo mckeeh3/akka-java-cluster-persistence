@@ -45,12 +45,13 @@ class EntityCommandActor extends AbstractLoggingActor {
 
     private void tickSending() {
         lastCommand = command();
+        log().info("{} -> {}", lastCommand, shardRegion);
         shardRegion.tell(lastCommand, self());
         getContext().become(receiving);
     }
 
     private void commandAckReceiving(EntityMessage.CommandAck commandAck) {
-        log().info("Received {} {}", commandAck, sender());
+        log().info("{} <- {}", commandAck, sender());
         getContext().become(sending);
     }
 

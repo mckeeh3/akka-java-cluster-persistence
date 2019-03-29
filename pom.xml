@@ -13,6 +13,7 @@
         <scala.version>2.12</scala.version>
         <akka.version>2.5.21</akka.version>
         <akka.management.version>1.0.0</akka.management.version>
+        <akka.persistence.version>0.93</akka.persistence.version>
         <fst.version>2.56</fst.version>
     </properties>
 
@@ -40,7 +41,7 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-persistence-cassandra_${scala.version}</artifactId>
-            <version>0.84</version>
+            <version>${akka.persistence.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
@@ -136,7 +137,7 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
-                                        <Main-Class>cluster.Runner</Main-Class>
+                                        <Main-Class>cluster.persistence.Runner</Main-Class>
                                     </manifestEntries>
                                 </transformer>
                             </transformers>

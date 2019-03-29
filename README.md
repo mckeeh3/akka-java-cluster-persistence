@@ -37,6 +37,10 @@ mvn clean package
 
 The Maven command builds the project and creates a self contained runnable JAR.
 
+### Cassandra Installation
+
+TODO make sure to mention creating all of the tables
+
 ### Run a cluster (Mac, Linux)
 
 The project contains a set of scripts that can be used to start and stop individual cluster nodes or start and stop a cluster of nodes.

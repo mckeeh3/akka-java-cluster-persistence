@@ -28,10 +28,12 @@ class EntityMessage {
 
     static class EntityCommand implements Serializable {
         static final long serialVersionUID = 42L;
+        final long messageNanoTime;
         final Entity.Id id;
         final Amount amount;
 
         private EntityCommand(Entity.Id id, Amount amount) {
+            messageNanoTime = System.nanoTime();
             this.id = id;
             this.amount = amount;
         }
@@ -39,25 +41,27 @@ class EntityMessage {
 
     static class DepositCommand extends EntityCommand {
         static final long serialVersionUID = 42L;
+
         DepositCommand(Entity.Id id, Amount amount) {
             super(id, amount);
         }
 
         @Override
         public String toString() {
-            return String.format("%s[%s, %s]", getClass().getSimpleName(), id, amount);
+            return String.format("%s[%s, %s, %dus]", getClass().getSimpleName(), id, amount, messageNanoTime);
         }
     }
 
     static class WithdrawalCommand extends EntityCommand {
         static final long serialVersionUID = 42L;
+
         WithdrawalCommand(Entity.Id id, Amount amount) {
             super(id, amount);
         }
 
         @Override
         public String toString() {
-            return String.format("%s[%s, %s]", getClass().getSimpleName(), id, amount);
+            return String.format("%s[%s, %s, %dus]", getClass().getSimpleName(), id, amount, messageNanoTime);
         }
     }
 
@@ -75,6 +79,7 @@ class EntityMessage {
 
     static class DepositEvent extends EntityEvent {
         static final long serialVersionUID = 42L;
+
         DepositEvent(Entity.Id id, Amount amount) {
             super(id, amount);
         }
@@ -91,6 +96,7 @@ class EntityMessage {
 
     static class WithdrawalEvent extends EntityEvent {
         static final long serialVersionUID = 42L;
+
         WithdrawalEvent(Entity.Id id, Amount amount) {
             super(id, amount);
         }
@@ -107,63 +113,85 @@ class EntityMessage {
 
     static class CommandAck implements Serializable {
         static final long serialVersionUID = 42L;
+        final long commandTime;
         final EntityEvent entityEvent;
 
-        CommandAck(EntityEvent entityEvent) {
+        private CommandAck(long commandTime, EntityEvent entityEvent) {
+            this.commandTime = commandTime;
             this.entityEvent = entityEvent;
+        }
+
+        static CommandAck from(EntityCommand entityCommand, EntityEvent entityEvent) {
+            return new CommandAck(entityCommand.messageNanoTime, entityEvent);
         }
 
         @Override
         public String toString() {
-            return String.format("%s[%s]", getClass().getSimpleName(), entityEvent);
+            final double elapsed = (System.nanoTime() - commandTime) / 1000000000.0;
+            return String.format("%s[%s, elapsed %.9fs, %dus]", getClass().getSimpleName(), entityEvent, elapsed, commandTime);
         }
     }
 
     static class Query implements Serializable {
         static final long serialVersionUID = 42L;
+        final long messageNanoTime;
         final Entity.Id id;
 
         Query(Entity.Id id) {
+            messageNanoTime = System.nanoTime();
             this.id = id;
         }
 
         @Override
         public String toString() {
-            return String.format("%s[%s]", getClass().getSimpleName(), id);
+            return String.format("%s[%dus, %s]", getClass().getSimpleName(), messageNanoTime, id);
         }
     }
 
     static class QueryAck implements Serializable {
         static final long serialVersionUID = 42L;
+        final long queryTime;
         final Entity entity;
 
-        QueryAck(Entity entity) {
+        private QueryAck(long queryTime, Entity entity) {
+            this.queryTime = queryTime;
             this.entity = entity;
+        }
+
+        static QueryAck from(Query query, Entity entity) {
+            return new QueryAck(query.messageNanoTime, entity);
         }
 
         @Override
         public String toString() {
-            return String.format("%s[%s]", getClass().getSimpleName(), entity);
+            final double elapsed = (System.nanoTime() - queryTime) / 1000000000.0;
+            return String.format("%s[%s, elapsed %.9fs, %dus]", getClass().getSimpleName(), entity, elapsed, queryTime);
         }
     }
 
     static class QueryAckNotFound implements Serializable {
         static final long serialVersionUID = 42L;
+        final long queryTime;
         final Entity.Id id;
 
-        QueryAckNotFound(Entity.Id id) {
+        private QueryAckNotFound(long queryTime, Entity.Id id) {
+            this.queryTime = queryTime;
             this.id = id;
+        }
+
+        static QueryAckNotFound from(Query query) {
+            return new QueryAckNotFound(query.messageNanoTime, query.id);
         }
 
         @Override
         public String toString() {
-            return String.format("%s[%s]", getClass().getSimpleName(), id);
+            final double elapsed = (System.nanoTime() - queryTime) / 1000000000.0;
+            return String.format("%s[%s, elapsed %.9fs, %ds]", getClass().getSimpleName(), id, elapsed, queryTime);
         }
     }
 
-    static int numberOfEventTags = 20;
-
     static Set<String> eventTag(EntityCommand entityCommand) {
+        int numberOfEventTags = 20;
         return new HashSet<>(Collections.singletonList(String.format("%d", entityCommand.id.id.hashCode() % numberOfEventTags)));
     }
 
