@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class SerializationPerformanceTest {
+public class SerializationPerformanceBenchmark {
     public static void main(String[] args) {
         testJavaSerialization(1000);
         testJavaSerialization(10000);
@@ -51,7 +51,7 @@ public class SerializationPerformanceTest {
         final long t1 = System.nanoTime();
 
         final List<EntityMessage.EntityCommand> entityCommands = serializedEntityCommands.stream()
-                .map(SerializationPerformanceTest::javaDeserialize)
+                .map(SerializationPerformanceBenchmark::javaDeserialize)
                 .collect(Collectors.toList());
 
         final long t2 = System.nanoTime();
@@ -69,7 +69,7 @@ public class SerializationPerformanceTest {
 
     private static List<Object> javaSerializeEntityCommands(List<EntityMessage.EntityCommand> entityCommands) {
         return entityCommands.stream()
-                .map(SerializationPerformanceTest::javaSerializeEntityCommand)
+                .map(SerializationPerformanceBenchmark::javaSerializeEntityCommand)
                 .collect(Collectors.toList());
     }
 
@@ -136,7 +136,7 @@ public class SerializationPerformanceTest {
         final long t1 = System.nanoTime();
 
         final List<EntityMessage.EntityCommand> entityCommands = serializedEntityCommands.stream()
-                .map(SerializationPerformanceTest::fstDeserialize)
+                .map(SerializationPerformanceBenchmark::fstDeserialize)
                 .collect(Collectors.toList());
 
         final long t2 = System.nanoTime();
@@ -154,7 +154,7 @@ public class SerializationPerformanceTest {
 
     private static List<Object> fstSerializeEntityCommands(List<EntityMessage.EntityCommand> entityCommands) {
         return entityCommands.stream()
-                .map(SerializationPerformanceTest::fstSerializeEntityCommand)
+                .map(SerializationPerformanceBenchmark::fstSerializeEntityCommand)
                 .collect(Collectors.toList());
     }
 

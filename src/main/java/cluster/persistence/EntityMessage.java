@@ -190,11 +190,6 @@ class EntityMessage {
         }
     }
 
-<<<<<<< HEAD
-    private static final int numberOfEventTags = 20;
-
-=======
->>>>>>> ead65e18361fab620bc9254006ca1161b67c0176
     static Set<String> eventTag(EntityCommand entityCommand) {
         int numberOfEventTags = 20;
         return new HashSet<>(Collections.singletonList(String.format("%d", entityCommand.id.id.hashCode() % numberOfEventTags)));
