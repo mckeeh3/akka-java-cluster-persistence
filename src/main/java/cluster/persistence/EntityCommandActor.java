@@ -8,6 +8,7 @@ import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 class EntityCommandActor extends AbstractLoggingActor {
@@ -51,7 +52,13 @@ class EntityCommandActor extends AbstractLoggingActor {
     }
 
     private void commandAckReceiving(EntityMessage.CommandAck commandAck) {
+<<<<<<< HEAD
+        java.time.Duration duration = java.time.Duration.between(commandAck.entityEvent.time, Instant.now());
+        String durationSeconds = String.format("%.3fs", duration.toMillis() / 1000.0);
+        log().info("Received ({}) {} {}", durationSeconds, commandAck, sender());
+=======
         log().info("{} <- {}", commandAck, sender());
+>>>>>>> ead65e18361fab620bc9254006ca1161b67c0176
         getContext().become(sending);
     }
 

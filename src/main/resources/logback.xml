@@ -6,6 +6,11 @@
         </encoder>
     </appender>
 
+    <logger name="com.datastax.driver.core.QueryLogger.NORMAL" level="DEBUG" />
+    <logger name="akka" level="INFO" />
+    <logger name="akka.persistence" level="DEBUG" />
+    <logger name="akka.persistence.cassandra.query" level="INFO" />
+
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
