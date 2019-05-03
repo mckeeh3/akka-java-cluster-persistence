@@ -11,10 +11,16 @@
     <properties>
         <java.version>8</java.version>
         <scala.version>2.12</scala.version>
+<<<<<<< HEAD
         <akka.version>2.5.22</akka.version>
         <akka.management.version>1.0.0</akka.management.version>
         <akka.persistence.cassandra.version>0.95</akka.persistence.cassandra.version>
         <logback.version>1.2.3</logback.version>
+=======
+        <akka.version>2.5.21</akka.version>
+        <akka.management.version>1.0.0</akka.management.version>
+        <akka.persistence.version>0.93</akka.persistence.version>
+>>>>>>> ead65e18361fab620bc9254006ca1161b67c0176
         <fst.version>2.56</fst.version>
     </properties>
 
@@ -47,7 +53,11 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-persistence-cassandra_${scala.version}</artifactId>
+<<<<<<< HEAD
             <version>${akka.persistence.cassandra.version}</version>
+=======
+            <version>${akka.persistence.version}</version>
+>>>>>>> ead65e18361fab620bc9254006ca1161b67c0176
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
@@ -75,6 +85,19 @@
             <version>${logback.version}</version>
         </dependency>
         <dependency>
+<<<<<<< HEAD
+=======
+            <groupId>com.lightbend.akka.management</groupId>
+            <artifactId>akka-management_${scala.version}</artifactId>
+            <version>${akka.management.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lightbend.akka.management</groupId>
+            <artifactId>akka-management-cluster-http_${scala.version}</artifactId>
+            <version>${akka.management.version}</version>
+        </dependency>
+        <dependency>
+>>>>>>> ead65e18361fab620bc9254006ca1161b67c0176
             <groupId>de.ruedigermoeller</groupId>
             <artifactId>fst</artifactId>
             <version>${fst.version}</version>

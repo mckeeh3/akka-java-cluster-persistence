@@ -30,13 +30,13 @@ class EntityPersistenceActor extends AbstractPersistentActor {
     }
 
     private void depositRecover(EntityMessage.DepositEvent depositEvent) {
-        log.info("Recover {}", depositEvent);
         update(depositEvent);
+        log.info("Recover {} {}", entity, depositEvent);
     }
 
     private void withdrawalRecover(EntityMessage.WithdrawalEvent withdrawalEvent) {
-        log.info("Recover {}", withdrawalEvent);
         update(withdrawalEvent);
+        log.info("Recover {} {}", entity, withdrawalEvent);
     }
 
     private void recoveryCompleted() {
@@ -54,28 +54,30 @@ class EntityPersistenceActor extends AbstractPersistentActor {
     }
 
     private void deposit(EntityMessage.DepositCommand depositCommand) {
-        persist(tagCommand(depositCommand), this::handleDeposit);
+        log.info("{} <- {}", depositCommand, sender());
+        persist(tagCommand(depositCommand), taggedEvent -> handleDeposit(depositCommand, taggedEvent));
     }
 
-    private void handleDeposit(Tagged taggedEvent) {
+    private void handleDeposit(EntityMessage.DepositCommand depositCommand, Tagged taggedEvent) {
         if (taggedEvent.payload() instanceof EntityMessage.DepositEvent) {
             EntityMessage.DepositEvent depositEvent = (EntityMessage.DepositEvent) taggedEvent.payload();
             update(depositEvent);
-            log.info("Deposit {} {} {}", entity, depositEvent, sender());
-            sender().tell(new EntityMessage.CommandAck(depositEvent), self());
+            log.info("{} {} {} -> {}", depositCommand, depositEvent, entity, sender());
+            sender().tell(EntityMessage.CommandAck.from(depositCommand, depositEvent), self());
         }
     }
 
     private void withdrawal(EntityMessage.WithdrawalCommand withdrawalCommand) {
-        persist(tagCommand(withdrawalCommand), this::handleWithdrawal);
+        log.info("{} <- {}", withdrawalCommand, sender());
+        persist(tagCommand(withdrawalCommand), taggedEvent -> handleWithdrawal(withdrawalCommand, taggedEvent));
     }
 
-    private void handleWithdrawal(Tagged taggedEvent) {
+    private void handleWithdrawal(EntityMessage.WithdrawalCommand withdrawalCommand, Tagged taggedEvent) {
         if (taggedEvent.payload() instanceof EntityMessage.WithdrawalEvent) {
             EntityMessage.WithdrawalEvent withdrawalEvent = (EntityMessage.WithdrawalEvent) taggedEvent.payload();
             update(withdrawalEvent);
-            log.info("Withdrawal {} {} {}", entity, withdrawalEvent, sender());
-            sender().tell(new EntityMessage.CommandAck(withdrawalEvent), self());
+            log.info("{} {} {} -> {}", withdrawalCommand, withdrawalEvent, entity, sender());
+            sender().tell(EntityMessage.CommandAck.from(withdrawalCommand, withdrawalEvent), self());
         }
     }
 
@@ -101,9 +103,9 @@ class EntityPersistenceActor extends AbstractPersistentActor {
 
     private void query(EntityMessage.Query query) {
         if (entity == null) {
-            sender().tell(new EntityMessage.QueryAckNotFound(query.id), self());
+            sender().tell(EntityMessage.QueryAckNotFound.from(query), self());
         } else {
-            sender().tell(new EntityMessage.QueryAck(entity), self());
+            sender().tell(EntityMessage.QueryAck.from(query, entity), self());
         }
     }
 

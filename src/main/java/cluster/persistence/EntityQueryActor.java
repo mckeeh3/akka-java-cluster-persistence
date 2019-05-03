@@ -13,7 +13,7 @@ class EntityQueryActor extends AbstractLoggingActor {
     private final ActorRef shardRegion;
     private Cancellable ticker;
     private FiniteDuration tickInterval = Duration.create(2, TimeUnit.SECONDS);
-    private Entity.Id lastQueryId;
+    private EntityMessage.Query lastQuery;
     private final Receive sending;
     private final Receive receiving;
 
@@ -41,32 +41,37 @@ class EntityQueryActor extends AbstractLoggingActor {
     }
 
     private void tickSending() {
-        lastQueryId = Random.entityId(1, 100);
-        shardRegion.tell(new EntityMessage.Query(lastQueryId), self());
+        lastQuery = query();
+        log().info("{} -> {}", lastQuery, shardRegion);
+        shardRegion.tell(lastQuery, self());
         getContext().become(receiving);
     }
 
     private void queryAckSending(EntityMessage.QueryAck queryAck) {
-        log().info("Received (late) {} {}", queryAck, sender());
+        log().info("(late) {} <- {}", queryAck, sender());
     }
 
     private void queryAckNotFoundSending(EntityMessage.QueryAckNotFound queryAckNotFound) {
-        log().info("Received (late) {} {}", queryAckNotFound, sender());
+        log().info("(late) {} <- {}", queryAckNotFound, sender());
     }
 
     private void tickReceiving() {
-        log().warning("No query response to {}", lastQueryId);
+        log().warning("No query response to {}", lastQuery);
         getContext().become(sending);
     }
 
     private void queryAckReceiving(EntityMessage.QueryAck queryAck) {
-        log().info("Received {} {}", queryAck, sender());
+        log().info("{} <- {}", queryAck, sender());
         getContext().become(sending);
     }
 
     private void queryAckNotFoundReceiving(EntityMessage.QueryAckNotFound queryAckNotFound) {
-        log().info("Received {} {}", queryAckNotFound, sender());
+        log().info("{} <- {}", queryAckNotFound, sender());
         getContext().become(sending);
+    }
+
+    private EntityMessage.Query query() {
+        return new EntityMessage.Query(Random.entityId(1, 100));
     }
 
     @Override
