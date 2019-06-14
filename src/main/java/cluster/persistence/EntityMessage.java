@@ -191,12 +191,12 @@ class EntityMessage {
     }
 
     static Set<String> eventTag(EntityCommand entityCommand) {
-        int numberOfEventTags = 20;
+        int numberOfEventTags = 5;
         return new HashSet<>(Collections.singletonList(String.format("%d", entityCommand.id.id.hashCode() % numberOfEventTags)));
     }
 
     static ShardRegion.MessageExtractor messageExtractor() {
-        final int numberOfShards = 100;
+        final int numberOfShards = 15;
 
         return new ShardRegion.MessageExtractor() {
             @Override

@@ -25,6 +25,15 @@ for a more detailed discussion about Akka Persistence.
 
 ### What is Akka Persistence
 
+This project builds on the
+[akka-java-cluster-sharding](https://github.com/mckeeh3/akka-java-cluster-sharding)
+project. The `EntityActor` in the previous project, which only logged entity messages, is replaced with an `EntityPersistenceActor`.
+
+The `EntityPersistenceActor` actor handles the state of a specific bank account. Incoming command messages are either bank account deposits or withdrawals. These commands, which are requests to perform an entity state changing action, are persisted as historical events. Please see the
+[Akka Persistence documentation](https://doc.akka.io/docs/akka/current/persistence.html#persistence)
+for more details about Event Sourcing. Here we will focus on the specific parts of this example that are related to persisting events.
+
+
 TODO
 
 ### Installation
