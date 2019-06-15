@@ -27,12 +27,66 @@ for a more detailed discussion about Akka Persistence.
 
 This project builds on the
 [akka-java-cluster-sharding](https://github.com/mckeeh3/akka-java-cluster-sharding)
-project. The `EntityActor` in the previous project, which only logged entity messages, is replaced with an `EntityPersistenceActor`.
+project. The `EntityActor` in the previous project, which only logged entity messages, is replaced with an `EntityPersistenceActor`, which adds the persistence of events that are derived from the command messages.
+
 
 The `EntityPersistenceActor` actor handles the state of a specific bank account. Incoming command messages are either bank account deposits or withdrawals. These commands, which are requests to perform an entity state changing action, are persisted as historical events. Please see the
 [Akka Persistence documentation](https://doc.akka.io/docs/akka/current/persistence.html#persistence)
-for more details about Event Sourcing. Here we will focus on the specific parts of this example that are related to persisting events.
+for more details about Event Sourcing and Akka Persistence. Here we will focus on the specific parts of this example that are related to persisting events.
 
+~~~java
+@Override
+public Receive createReceive() {
+    return receiveBuilder()
+            .match(EntityMessage.DepositCommand.class, this::deposit)
+            .match(EntityMessage.WithdrawalCommand.class, this::withdrawal)
+            .match(EntityMessage.Query.class, this::query)
+            .matchEquals(ReceiveTimeout.getInstance(), t -> passivate())
+            .build();
+}
+~~~
+
+In the `createReceive()` method, shown above, is the routing of messages sent to the `EntityPersistenceActor`. Deposit and withdrawal command messages are routed to the appropriate methods.
+
+~~~java
+private void deposit(EntityMessage.DepositCommand depositCommand) {
+    log.info("{} <- {}", depositCommand, sender());
+    persist(tagCommand(depositCommand), taggedEvent -> handleDeposit(depositCommand, taggedEvent));
+}
+~~~
+
+When a deposit command message is received, it is handled by the `deposit(...)` method; and this method invokes the inherited `persist(...)` method. The persist method stores events in an event store, such as a Cassandra table. In the above code snippet, the `tagCommand(...)` method creates events from commands. (Note: tags are covered in the next project that covers Akka persistence query.) A lambda is called after the event has been persisted. In this case, the `handleDeposit(...)` method is invoked.
+
+~~~java
+private void handleDeposit(EntityMessage.DepositCommand depositCommand, Tagged taggedEvent) {
+    if (taggedEvent.payload() instanceof EntityMessage.DepositEvent) {
+        EntityMessage.DepositEvent depositEvent = (EntityMessage.DepositEvent) taggedEvent.payload();
+        update(depositEvent);
+        log.info("{} {} {} -> {}", depositCommand, depositEvent, entity, sender());
+        sender().tell(EntityMessage.CommandAck.from(depositCommand, depositEvent), self());
+    }
+}
+~~~
+
+The `handleDeposit` method updates the bank account entity. In this case, the deposit amount is added to the account balance. Also, an acknowledgment message is sent to the command message sender. Something is missing from this code, can you see it? Can you fix it?
+
+~~~java
+private void withdrawal(EntityMessage.WithdrawalCommand withdrawalCommand) {
+    log.info("{} <- {}", withdrawalCommand, sender());
+    persist(tagCommand(withdrawalCommand), taggedEvent -> handleWithdrawal(withdrawalCommand, taggedEvent));
+}
+~~~
+
+~~~java
+private void handleWithdrawal(EntityMessage.WithdrawalCommand withdrawalCommand, Tagged taggedEvent) {
+    if (taggedEvent.payload() instanceof EntityMessage.WithdrawalEvent) {
+        EntityMessage.WithdrawalEvent withdrawalEvent = (EntityMessage.WithdrawalEvent) taggedEvent.payload();
+        update(withdrawalEvent);
+        log.info("{} {} {} -> {}", withdrawalCommand, withdrawalEvent, entity, sender());
+        sender().tell(EntityMessage.CommandAck.from(withdrawalCommand, withdrawalEvent), self());
+    }
+}
+~~~
 
 TODO
 
