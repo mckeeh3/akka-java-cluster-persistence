@@ -27,8 +27,7 @@ for a more detailed discussion about Akka Persistence.
 
 This project builds on the
 [akka-java-cluster-sharding](https://github.com/mckeeh3/akka-java-cluster-sharding)
-project. The `EntityActor` in the previous project, which only logged entity messages, is replaced with an `EntityPersistenceActor`, which adds the persistence of events that are derived from the command messages.
-
+project. The `EntityActor` in the previous project, which only logged entity messages, is replaced with an `EntityPersistenceActor`, which adds the persistence of events that are derived from command messages.
 
 The `EntityPersistenceActor` actor handles the state of a specific bank account. Incoming command messages are either bank account deposits or withdrawals. These commands, which are requests to perform an entity state changing action, are persisted as historical events. Please see the
 [Akka Persistence documentation](https://doc.akka.io/docs/akka/current/persistence.html#persistence)
@@ -55,7 +54,7 @@ private void deposit(EntityMessage.DepositCommand depositCommand) {
 }
 ~~~
 
-When a deposit command message is received, it is handled by the `deposit(...)` method; and this method invokes the inherited `persist(...)` method. The persist method stores events in an event store, such as a Cassandra table. In the above code snippet, the `tagCommand(...)` method creates events from commands. (Note: tags are covered in the next project that covers Akka persistence query.) A lambda is called after the event has been persisted. In this case, the `handleDeposit(...)` method is invoked.
+When a deposit command message is received, it is handled by the `deposit(...)` method; and this method invokes the inherited `persist(...)` method. The persist method stores events in an event store, such as a Cassandra table. In the above code snippet, the `tagCommand(...)` method creates events from commands. (Note: tags are covered in the next project that privides an example of Akka persistence query.) A callback lambda is invoked after the event has been persisted. In this case, the `handleDeposit(...)` method is invoked.
 
 ~~~java
 private void handleDeposit(EntityMessage.DepositCommand depositCommand, Tagged taggedEvent) {
@@ -68,7 +67,9 @@ private void handleDeposit(EntityMessage.DepositCommand depositCommand, Tagged t
 }
 ~~~
 
-The `handleDeposit` method updates the bank account entity. In this case, the deposit amount is added to the account balance. Also, an acknowledgment message is sent to the command message sender. Something is missing from this code, can you see it? Can you fix it?
+The `handleDeposit` method updates the state of the bank account entity. In this case, the deposit amount is added to the account balance. Also, an acknowledgment message is sent to the command message sender.
+
+BTW - Something is missing from this code, can you see it? Can you fix it?
 
 ~~~java
 private void withdrawal(EntityMessage.WithdrawalCommand withdrawalCommand) {
@@ -76,6 +77,8 @@ private void withdrawal(EntityMessage.WithdrawalCommand withdrawalCommand) {
     persist(tagCommand(withdrawalCommand), taggedEvent -> handleWithdrawal(withdrawalCommand, taggedEvent));
 }
 ~~~
+
+Withdrawls are handled in the same way that deposits are handled. Incoming withdrawal commands are routed to the `withdrawal(...)` method, an event is created from the command, and then it is persisted to the event store.
 
 ~~~java
 private void handleWithdrawal(EntityMessage.WithdrawalCommand withdrawalCommand, Tagged taggedEvent) {
@@ -87,6 +90,10 @@ private void handleWithdrawal(EntityMessage.WithdrawalCommand withdrawalCommand,
     }
 }
 ~~~
+
+After withdrawal events are persisted the `handleWithdrawal(...)` lambda is invoked. The withdrawal event is used to update the state of the bank account entity, and then an acknowledgement message is sent to the withdrawal message sender.
+
+BTW again - the same problem with the deposit handlers exists with the withdrawal handler. Do you know how to fix it?
 
 TODO
 
