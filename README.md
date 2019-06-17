@@ -100,9 +100,21 @@ mvn clean package
 
 The Maven command builds the project and creates a self contained runnable JAR.
 
-### Cassandra Installation
+### Cassandra Installation and Running
 
-TODO make sure to mention creating all of the tables
+For Cassandra installation please see the [Installing Cassandra](http://cassandra.apache.org/doc/latest/getting_started/installing.html) documentation.
+
+One of the easiest ways to use Cassandra for testing is to download the tar file, uncompress the files, and run a Cassandra process in the background.
+
+tar -xzvf apache-cassandra-3.6-bin.tar.gz
+cd apache-cassandra-3.6
+./bin cassandra -f
+
+This installs a ready to tun version of Cassandra.
+
+Note: please make sure to use Java 8 to run Cassandra.
+
+Tip: the default location of the database files are located in the Cassandra installation `data` directory. You can remove this directory when you want to run tests with an empty database.
 
 ### Run a cluster (Mac, Linux)
 
