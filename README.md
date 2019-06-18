@@ -23,7 +23,7 @@ This project contains an example implementation of Akka persistence. Here we wil
 [Akka documentation](https://doc.akka.io/docs/akka/current/persistence.html)
 for a more detailed discussion about Akka Persistence.
 
-### What is Akka Persistence
+### An Example Implementation of Akka Persistence Query
 
 This project builds on the
 [akka-java-cluster-sharding](https://github.com/mckeeh3/akka-java-cluster-sharding)
@@ -95,7 +95,17 @@ After withdrawal events are persisted the `handleWithdrawal(...)` lambda is invo
 
 BTW again - the same problem with the deposit handlers exists with the withdrawal handler. Do you know how to fix it?
 
-TODO
+
+![Visualization of cluster sharding](docs/images/akka-cluster-k8-3-pods.png)
+<center>Figure 1, Visualization of cluster sharding</center><br/>
+
+As previously mentioned, this project is based on Akka Cluster Sharding. The main difference with Akka Persistence is the addition of persisting entity events. What you get with Akka Persistence and Akka Cluster Sharding is an implementation of [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). In Figure 1, the entities are visualized as the blue circles shown on the perimeter of the diagram. As commands are sent as messages to entity actors the Akka cluster sharding actors handle the routing of the command messages. The details of the life cycle of entity actors are covered in the
+[Akka Persistence documentation](https://doc.akka.io/docs/akka/current/persistence.html).
+The entity actors, shown in the diagram, are started when there are commands to be processed, and they shut themselves down when the flow of commands stop.
+
+In the next project,
+[akka-java-cluster-persistence-query](https://github.com/mckeeh3/akka-java-cluster-persistence-query),
+you will see an implementation of Akka Persistence Query, which provides the processing flow of events from the event store to what is typically called the read-side query store.
 
 ### Installation
 
@@ -113,15 +123,17 @@ For Cassandra installation please see the [Installing Cassandra](http://cassandr
 
 One of the easiest ways to use Cassandra for testing is to download the tar file, uncompress the files, and run a Cassandra process in the background.
 
+~~~bash
 tar -xzvf apache-cassandra-3.6-bin.tar.gz
 cd apache-cassandra-3.6
 ./bin cassandra -f
+~~~
 
 This installs a ready to tun version of Cassandra.
 
 Note: please make sure to use Java 8 to run Cassandra.
 
-Tip: the default location of the database files are located in the Cassandra installation `data` directory. You can remove this directory when you want to run tests with an empty database.
+Tip: the default location of the database files is `data` directory within the Cassandra installation directory. To reset with an empty database stop Cassandra, remove the `data` directory and restart Cassandra.
 
 ### Run a cluster (Mac, Linux)
 
